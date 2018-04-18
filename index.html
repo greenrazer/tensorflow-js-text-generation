@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.9.0"></script>
+    <script src="main.js"></script>
+    <script src="model.js"></script>
+    <link rel="stylesheet" type="text/css" href="main.css" />
+  </head>
+  <body>
+    <div id="left-side" class="container">
+      <span class="header"> Input Data Here </span>
+      <textarea id="input-text" class="io-areas"></textarea>
+      <button id="train-model">Train Model</button>
+      <button id="generate-text">Generate Text</button>
+    </div>
+    <div id="right-side" class="container">
+      <span class="header">Console</span>
+      <div id="model-progress"></div>
+    </div>
+    <div id="bottom" class="container">
+      <span class="header">Generated Text</span>
+      <textarea id="output-text" class="io-areas" readonly></textarea>
+    </div>
+  </body>
+</html>

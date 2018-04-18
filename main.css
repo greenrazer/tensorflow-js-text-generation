@@ -1,0 +1,51 @@
+#left-side {
+  display: inline-block;
+  width: 70%;
+  height: 350px;
+}
+
+#right-side {
+  display: inline-block;
+  width: 29%;
+  height: 350px;
+}
+
+#right-side #model-progress {
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+#bottom {
+  width: 100%;
+}
+
+.io-areas {
+  width: 100%;
+  height: 300px;
+  resize: none;
+}
+
+.header {
+  width: 100%;
+  font-size: 20px;
+  display: block;
+  text-align: center;
+}
+
+.container {
+  vertical-align: top;
+}
+
+.log-text {
+  word-wrap: break-word;
+  width: 100%;
+  display: block;
+}
+
+@media (max-width: 550px) {
+  #right-side , #left-side{
+    width: 100%;
+  }
+}
