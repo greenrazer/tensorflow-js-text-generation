@@ -13,18 +13,6 @@ function virutalConsoleLog(data, error){
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  let model = new LSTM({
-    batchSize: 1,
-    seqLength: 2,
-    numLayers: 2,
-    hiddenSize: 128,
-    vocabSize: 3,
-    outputKeepProb: 1
-  });
-
-  model.init({
-    logger:virutalConsoleLog
-  });
 
   const trainButton = document.getElementById("train-model");
   trainButton.addEventListener('click', () => {
@@ -33,6 +21,20 @@ document.addEventListener('DOMContentLoaded', () => {
       virutalConsoleLog("no data in input... stopping", true);
     }
     else {
+      let [inData, outData, vocab] = prepareData(inputText);
+      let model = new LSTM({
+        seqLength: 2,
+        numLayers: 2,
+        hiddenSize: 128,
+        vocabSize: vocab.size,
+        outputKeepProb: 1
+      });
+
+      model.init({
+        logger:virutalConsoleLog
+      }).then(() => {
+        model.train(inData, outData);
+      });
     }
   });
 
