@@ -54,8 +54,7 @@ class LSTM {
     const denseLayer = await tf.layers.dense({
       units: 1,
       activation: 'relu',
-      useBias: true,
-      inputDim: this.hiddenSize
+      useBias: true
     });
 
     // logger("creating reshape layer.");
@@ -66,7 +65,7 @@ class LSTM {
     let inputs = await embeddingsLayer.apply(inputData);
 
     if(training && this.outputKeepProb) {
-      inputs = dropoutLayer.apply(inputs);
+      inputs = await dropoutLayer.apply(inputs);
     }
 
     let outputs = await multiLstmCellLayer.apply(inputs);
@@ -92,9 +91,7 @@ class LSTM {
     const logger = options.logger || console.log;
     const batchSize = options.batchSize || 1;
     const epochs = options.epochs || 1;
-    console.log("train");
     for (let i = 1; i < epochs+1; ++i) {
-      console.log("asdasd");
       const modelFit = await this.model.fit(inData, outData, {
         batchSize: batchSize,
         epochs: epochs
@@ -108,12 +105,49 @@ function prepareData(text) {
   let data = text.split("");
   let vocab = getVocab(data);
   data = data.map((value) => {
-    return vocab.get(value);
-  })
-  let labels = data.slice()
-  data = tf.tensor(data);
-  labels = tf.tensor(labels.rotateLeft());
+    let place = vocab.get(value);
+    // return oneHot(vocab.size, place);
+    return place;
+  });
+  let labels = data.slice();
+  labels = labels.rotateLeft();
   return [data, labels, vocab];
+}
+
+function divideIntoSequences(data, seqLength, batchSize){
+  let seqs = Math.floor(data.length / seqLength);
+  let output = [];
+  for(let i = 0; i < seqs; i++){
+    let seqPacket = [];
+    for(let j = 0; j < seqLength; j++){
+      seqPacket.push(data[seqLength*i + j]);
+    }
+    output.push(seqPacket);
+  }
+  return output;
+  // let batches = Math.floor(seqs / batchSize);
+  // let outoutput = []
+  // for(let i = 0; i < batches; i++){
+  //   let batchPacket = [];
+  //   for(let j = 0; j < batchSize; j++){
+  //     batchPacket.push(output[batchSize*i + j]);
+  //   }
+  //   outoutput.push(batchPacket);
+  // }
+  // return outoutput;
+}
+
+function oneHot(size, at){
+  let vector = [];
+  for(let i = 0; i < size; i++){
+    if(at == i){
+      vector.push(1);
+    }
+    else{
+      vector.push(0);
+    }
+  }
+  return vector;
 }
 
 function getVocab(arr) {

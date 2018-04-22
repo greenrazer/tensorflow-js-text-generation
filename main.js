@@ -12,6 +12,8 @@ function virutalConsoleLog(data, error){
   pageConsole.scrollTop = pageConsole.scrollHeight;
 }
 
+let model;
+
 document.addEventListener('DOMContentLoaded', () => {
 
   const trainButton = document.getElementById("train-model");
@@ -22,19 +24,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     else {
       let [inData, outData, vocab] = prepareData(inputText);
-      let model = new LSTM({
-        seqLength: 2,
-        numLayers: 2,
-        hiddenSize: 128,
-        vocabSize: vocab.size,
-        outputKeepProb: 1
-      });
+      inData = divideIntoSequences(inData, 2, 2);
+      outData = divideIntoSequences(outData, 2, 2);
+      inData = tf.tensor(inData);
+      outData = tf.tensor(outData);
+      if(!model){
+        model = new LSTM({
+          seqLength: 2,
+          numLayers: 2,
+          hiddenSize: 128,
+          vocabSize: vocab.size,
+          outputKeepProb: 1
+        });
 
-      model.init({
-        logger:virutalConsoleLog
-      }).then(() => {
-        model.train(inData, outData);
-      });
+        model.init({
+          logger:virutalConsoleLog
+        }).then(() => {
+          model.train(inData, outData);
+        });
+      }
+      else {
+
+      }
     }
   });
 
