@@ -1,6 +1,6 @@
 function prepareData(text, seqLength) {
   let data = text.split("");
-  let vocab = getVocab(data);
+  let [vocab,indVocab] = getVocab(data);
   let dataX = [];
   let dataY = [];
   for (let i = 0; i < data.length - seqLength; i++){
@@ -9,7 +9,7 @@ function prepareData(text, seqLength) {
     dataX.push(inSeq.map(x=>oneHot(vocab.size, vocab.get(x))));
     dataY.push(oneHot(vocab.size, vocab.get(outSeq)));
   }
-  return [dataX, dataY, vocab];
+  return [dataX, dataY, vocab, indVocab];
 }
 
 function oneHot(size, at){
@@ -23,6 +23,29 @@ function oneHot(size, at){
     }
   }
   return vector;
+}
+
+function oneHotString(text, vocab){
+  let output = [];
+  for(let i =0; i < text.length; i++){
+    let onehot = oneHot(vocab.size, vocab.get(text.charAt(i)));
+    output.push(onehot);
+  }
+  return output;
+}
+
+async function decodeOutput(data, vocab) {
+  let output = [];
+  for(let i = 0; i < data.shape[0]; i++){
+    let tensor = data.slice(i, 1);
+    tensor = tensor.reshape([vocab.length])
+    let index = tensor.argMax();
+    index = await index.data();
+    index = index[0];
+    let letter = vocab[index];
+    output.push(letter);
+  }
+  return output.join("");
 }
 
 function getVocab(arr) {
@@ -39,9 +62,13 @@ function getVocab(arr) {
   }
   // here we are taking those occurances and turning it in
   // into a map from letter to how frequetly it appears relative to other letters
-  return new Map(Array.from(counts).sort((a, b) => {
+  let indVocab = [];
+  let vocab = new Map(Array.from(counts).sort((a, b) => {
     return b[1] - a[1];
   }).map((value, i) => {
+    indVocab.push(value[0]);
     return [value[0], i];
   }));
+
+  return [vocab, indVocab];
 }

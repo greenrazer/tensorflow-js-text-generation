@@ -74,4 +74,16 @@ class LSTM {
       logger("Loss after epoch " + (i+1) + ": " + modelFit.history.loss[0]);
     }
   }
+  async predict(primer, amnt){
+    let output = tf.tensor(primer);
+    for(let i = 0; i < amnt; i++){
+      let slicedVec = await output.slice(i,this.seqLength);
+      slicedVec = slicedVec.reshape([1, slicedVec.shape[0], slicedVec.shape[1]]);
+      let next = await this.model.predict(slicedVec, {
+        batchSize: 1,
+      });
+      output = output.concat(next);
+    }
+    return output;
+  }
 }

@@ -13,6 +13,9 @@ function virtualConsoleLog(data, error){
 }
 
 let model;
+let seqLength = 2;
+let vocab;
+let indexToVocab;
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -22,8 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
       virtualConsoleLog("no data in input... stopping", true);
     }
     else {
-      let seqLength = 2;
-      let [inData, outData, vocab] = prepareData(inputText, seqLength);
+      let inData;
+      let outData;
+      [inData, outData, vocab, indexToVocab] = prepareData(inputText, seqLength);
       inData = tf.tensor(inData);
       outData = tf.tensor(outData);
       if(!model){
@@ -40,8 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }).then(() => {
           model.train(inData, outData, {
             logger:virtualConsoleLog,
-            batchSize: 2,
-            epochs: 1
+            batchSize: 10,
+            epochs: 10
           });
         });
       }
@@ -51,6 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  document.getElementById("generate-text").addEventListener('click', () => {
+  document.getElementById("generate-text").addEventListener('click', async() => {
+    let primer = "ga"
+    let predicted = await model.predict(oneHotString(primer, vocab), 100);
+    let decoded = await decodeOutput(predicted, indexToVocab);
+    document.getElementById("output-text").value = decoded;
   });
-})
+});
