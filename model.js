@@ -18,7 +18,7 @@ class LSTM {
     const logger = options && options.logger ? options.logger : console.log;
 
     logger("setting up model...");
-    
+
     let cells = [];
     for(let i = 0; i < this.numLayers; i++) {
       const cell = await tf.layers.lstmCell({
@@ -71,7 +71,7 @@ class LSTM {
         batchSize: batchSize,
         epochs: 1,
       });
-      logger("Loss after epoch " + 0 + ": " + modelFit.history.loss[0]);
+      logger("Loss after epoch " + (i+1) + ": " + modelFit.history.loss[0]);
     }
   }
 }
