@@ -2,7 +2,7 @@
  * @param {String} data - data to print to virutal console
  * @param {Boolean} error - whether to log as an error or normal, default false
  */
-function virutalConsoleLog(data, error){
+function virtualConsoleLog(data, error){
   const date = new Date().toLocaleString();
   let pageConsole = document.getElementById("model-progress");
   let newData = document.createElement('span');
@@ -16,21 +16,19 @@ let model;
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  const trainButton = document.getElementById("train-model");
-  trainButton.addEventListener('click', () => {
+  document.getElementById("train-model").addEventListener('click', () => {
     let inputText = document.getElementById("input-text").value;
     if(!inputText) {
-      virutalConsoleLog("no data in input... stopping", true);
+      virtualConsoleLog("no data in input... stopping", true);
     }
     else {
-      let [inData, outData, vocab] = prepareData(inputText);
-      inData = divideIntoSequences(inData, 2, 2);
-      outData = divideIntoSequences(outData, 2, 2);
+      let seqLength = 2;
+      let [inData, outData, vocab] = prepareData(inputText, seqLength);
       inData = tf.tensor(inData);
       outData = tf.tensor(outData);
       if(!model){
         model = new LSTM({
-          seqLength: 2,
+          seqLength: seqLength,
           numLayers: 2,
           hiddenSize: 128,
           vocabSize: vocab.size,
@@ -38,9 +36,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         model.init({
-          logger:virutalConsoleLog
+          logger:virtualConsoleLog
         }).then(() => {
-          model.train(inData, outData);
+          model.train(inData, outData, {
+            logger:virtualConsoleLog,
+            batchSize: 2,
+            epochs: 1
+          });
         });
       }
       else {
@@ -49,7 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  const generateButton = document.getElementById("generate-text");
-  generateButton.addEventListener('click', () => {
+  document.getElementById("generate-text").addEventListener('click', () => {
   });
 })
