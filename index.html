@@ -1,13 +1,21 @@
 <html>
   <head>
+    <title>Seq-to-Seq Text Generator</title>
     <link rel="stylesheet" type="text/css" href="main.css" />
   </head>
   <body>
+    <div id="hyper-parameters">
+      <span class="header">Hyper Parameters</span>
+      Sequence Length: <input id="seq-length" type="number" value=2>
+      Output Keep Probability: <input id="output-keep-prob" type="number" value=0.2>
+      Training Epochs: <input id="epochs" type="number" value=1>
+      Training Batch Size: <input id="batch-size" type="number" value=1>
+    </div>
     <div id="left-side" class="container">
       <span class="header"> Input Data Here </span>
       <textarea id="input-text" class="io-areas"></textarea>
       <button id="train-model">Train Model</button>
-      <button id="generate-text">Generate Text</button>
+      <button id="keep-training">Continue Training</button>
     </div>
     <div id="right-side" class="container">
       <span class="header">Console</span>
@@ -15,6 +23,9 @@
     </div>
     <div id="bottom" class="container">
       <span class="header">Generated Text</span>
+      Primer Text: <input id="primer" type="text" value="hello">
+      Number of Characters to Generate: <input id="num-chars" type="number" value=10>
+      <button id="generate-text">Generate Text</button>
       <textarea id="output-text" class="io-areas" readonly></textarea>
     </div>
   </body>

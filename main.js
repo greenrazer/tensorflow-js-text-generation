@@ -12,53 +12,78 @@ function virtualConsoleLog(data, error){
   pageConsole.scrollTop = pageConsole.scrollHeight;
 }
 
+const LSTM_LAYERS = 2;
+const LSTM_SIZE = 128;
+
 let model;
-let seqLength = 2;
-let vocab;
-let indexToVocab;
+let globalVocab;
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  document.getElementById("train-model").addEventListener('click', () => {
+  document.getElementById("train-model").addEventListener('mousedown', async () => {
     let inputText = document.getElementById("input-text").value;
+    let seqLength = parseInt(document.getElementById("seq-length").value);
+    let outputKeepProb = parseInt(document.getElementById("output-keep-prob").value);
+    let epochs = parseInt(document.getElementById("epochs").value);
+    let batchSize = parseInt(document.getElementById("batch-size").value);
+
     if(!inputText) {
       virtualConsoleLog("no data in input... stopping", true);
     }
     else {
-      let inData;
-      let outData;
-      [inData, outData, vocab, indexToVocab] = prepareData(inputText, seqLength);
-      inData = tf.tensor(inData);
-      outData = tf.tensor(outData);
-      if(!model){
-        model = new LSTM({
-          seqLength: seqLength,
-          numLayers: 2,
-          hiddenSize: 128,
-          vocabSize: vocab.size,
-          outputKeepProb: 1
-        });
+      // set up training data
+      let [trainIn, trainOut, vocab, indexToVocab] = prepareData(inputText, seqLength);
+      globalVocab = vocab;
+      trainIn = tf.tensor(trainIn);
+      trainOut = tf.tensor(trainOut);
 
-        model.init({
-          logger:virtualConsoleLog
-        }).then(() => {
-          model.train(inData, outData, {
-            logger:virtualConsoleLog,
-            batchSize: 10,
-            epochs: 10
-          });
-        });
-      }
-      else {
+      // set up model
+      model = new LSTM({
+        seqLength: seqLength,
+        outputKeepProb: outputKeepProb,
+        vocab: vocab,
+        indexToVocab: indexToVocab,
+        numLayers: LSTM_LAYERS,
+        hiddenSize: LSTM_SIZE
+      });
 
-      }
+      // create model
+      await model.init();
+
+      // train model
+      await model.train(trainIn, trainOut, {
+        batchSize: batchSize,
+        epochs: epochs
+      });
     }
   });
 
-  document.getElementById("generate-text").addEventListener('click', async() => {
-    let primer = "ga"
-    let predicted = await model.predict(oneHotString(primer, vocab), 100);
-    let decoded = await decodeOutput(predicted, indexToVocab);
-    document.getElementById("output-text").value = decoded;
+  document.getElementById("generate-text").addEventListener('mousedown', async() => {
+    let primer = document.getElementById("primer").value;
+    let predictLength = parseInt(document.getElementById("num-chars").value);
+
+    if(model){
+      let predicted = await model.predict(oneHotString(primer, globalVocab), predictLength);
+      document.getElementById("output-text").value = predicted;
+    }
+    else {
+      throw new Error("Model is not trained.")
+    }
+  });
+
+  document.getElementById("keep-training").addEventListener('mousedown', async() => {
+    // TODO implement later
+    // let epochs = parseInt(document.getElementById("epochs").value);
+    // let batchSize = parseInt(document.getElementById("batch-size").value);
+
+    // if(model){
+    //   await model.train(trainIn, trainOut, {
+    //     batchSize: batchSize,
+    //     epochs: epochs
+    //   });
+    // }
+    // else {
+    //   throw new Error("Model is not initially trained.")
+    // }
   });
 });

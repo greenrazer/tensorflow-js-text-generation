@@ -3,11 +3,13 @@ class LSTM {
     if (options.seqLength &&
         options.hiddenSize &&
         options.numLayers &&
-        options.vocabSize){
+        options.vocab &&
+        options.indexToVocab){
       this.seqLength = options.seqLength;
       this.hiddenSize = options.hiddenSize;
       this.numLayers = options.numLayers;
-      this.vocabSize = options.vocabSize;
+      this.vocab = options.vocab;
+      this.indexToVocab = options.indexToVocab
       this.outputKeepProb = options.outputKeepProb;
     }
     else {
@@ -30,17 +32,17 @@ class LSTM {
     const multiLstmCellLayer = await tf.layers.rnn({
       cell: cells,
       returnSequences: true,
-      inputShape: [this.seqLength, this.vocabSize]
+      inputShape: [this.seqLength, this.vocab.size]
     });
 
     const dropoutLayer = await tf.layers.dropout({
-      rate: 0.2
+      rate: this.outputKeepProb
     });
 
     const flattenLayer = tf.layers.flatten();
 
     const denseLayer = await tf.layers.dense({
-      units: this.vocabSize,
+      units: this.vocab.size,
       activation: 'softmax',
       useBias: true
     });
@@ -75,15 +77,16 @@ class LSTM {
     }
   }
   async predict(primer, amnt){
+    let startIndex = primer.length - this.seqLength - 1;
     let output = tf.tensor(primer);
     for(let i = 0; i < amnt; i++){
-      let slicedVec = await output.slice(i,this.seqLength);
+      let slicedVec = output.slice(i + startIndex,this.seqLength);
       slicedVec = slicedVec.reshape([1, slicedVec.shape[0], slicedVec.shape[1]]);
       let next = await this.model.predict(slicedVec, {
         batchSize: 1,
       });
       output = output.concat(next);
     }
-    return output;
+    return decodeOutput(output, this.indexToVocab);
   }
 }
