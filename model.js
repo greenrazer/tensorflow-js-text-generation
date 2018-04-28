@@ -84,6 +84,7 @@ class LSTM {
       slicedVec = slicedVec.reshape([1, slicedVec.shape[0], slicedVec.shape[1]]);
       let next = await this.model.predict(slicedVec, {
         batchSize: 1,
+        epochs: 1
       });
       output = output.concat(next);
     }
