@@ -20,6 +20,14 @@ class LSTM {
     const logger = options && options.logger ? options.logger : console.log;
 
     logger("setting up model...");
+    tf.nextFrame();
+
+    // TODO will work after https://github.com/tensorflow/tfjs-core/pull/981
+    const embeddingLayer = await tf.layers.embedding({
+      inputDim: 1,
+      outputDim: this.vocab.size,
+      inputLength: this.seqLength
+    });
 
     let cells = [];
     for(let i = 0; i < this.numLayers; i++) {
@@ -32,7 +40,7 @@ class LSTM {
     const multiLstmCellLayer = await tf.layers.rnn({
       cell: cells,
       returnSequences: true,
-      inputShape: [this.seqLength, this.vocab.size]
+      // inputShape: [this.seqLength, this.vocab.size]
     });
 
     const dropoutLayer = await tf.layers.dropout({
@@ -48,12 +56,14 @@ class LSTM {
     });
 
     const model = tf.sequential();
+    model.add(embeddingLayer);
     model.add(multiLstmCellLayer);
     model.add(dropoutLayer);
     model.add(flattenLayer);
     model.add(denseLayer);
 
     logger("compiling...");
+    tf.nextFrame();
 
     model.compile({
       loss: 'categoricalCrossentropy', 
@@ -61,6 +71,7 @@ class LSTM {
     });
 
     logger("done.");
+    tf.nextFrame();
 
     this.model = await model;
   }
@@ -74,6 +85,7 @@ class LSTM {
         epochs: 1,
       });
       logger("Loss after epoch " + (i+1) + ": " + modelFit.history.loss[0]);
+      tf.nextFrame();
     }
   }
   async predict(primer, amnt){
@@ -87,6 +99,7 @@ class LSTM {
         epochs: 1
       });
       output = output.concat(next);
+      tf.nextFrame();
     }
     return decodeOutput(output, this.indexToVocab);
   }

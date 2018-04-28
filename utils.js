@@ -6,7 +6,7 @@ function prepareData(text, seqLength) {
   for (let i = 0; i < data.length - seqLength; i++){
     let inSeq = data.slice(i, i+seqLength);
     let outSeq = data[i+seqLength];
-    dataX.push(inSeq.map(x=>oneHot(vocab.size, vocab.get(x))));
+    dataX.push(inSeq.map(x=>vocab.get(x)));
     dataY.push(oneHot(vocab.size, vocab.get(outSeq)));
   }
   return [dataX, dataY, vocab, indVocab];
